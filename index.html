@@ -1,0 +1,906 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#f3e9d0" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#15212e" media="(prefers-color-scheme: dark)">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Loup Solitaire">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<title>Carnet du Kaï – Loup Solitaire</title>
+<style>
+@font-face{font-family:'IM Fell English';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/im-fell-english-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'IM Fell English';font-style:italic;font-weight:400;font-display:swap;src:url(fonts/im-fell-english-latin-400-italic.woff2) format('woff2')}
+@font-face{font-family:'Alegreya Sans';font-style:normal;font-weight:400;font-display:swap;src:url(fonts/alegreya-sans-latin-400-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya Sans';font-style:normal;font-weight:500;font-display:swap;src:url(fonts/alegreya-sans-latin-500-normal.woff2) format('woff2')}
+@font-face{font-family:'Alegreya Sans';font-style:normal;font-weight:700;font-display:swap;src:url(fonts/alegreya-sans-latin-700-normal.woff2) format('woff2')}
+:root{
+  --bg:#e8dbbd; --surface:#f3e9d0; --surface2:#e2d2ab; --ink:#2a2018; --muted:#6a583f;
+  --line:#c3ad80; --accent:#8a5a12; --accent-ink:#fff7e3; --danger:#962b21; --good:#386a3d;
+  --nav:#d8c598; --shadow:rgba(60,40,10,.18);
+  --display:'IM Fell English',Georgia,'Times New Roman',serif;
+  --ui:'Alegreya Sans',system-ui,-apple-system,'Segoe UI',sans-serif;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#0d1620; --surface:#15212e; --surface2:#1e2e40; --ink:#ece3cf; --muted:#9aa8b6;
+    --line:#2c3f54; --accent:#d4a63f; --accent-ink:#1b1406; --danger:#e07366; --good:#7fbd87;
+    --nav:#09111a; --shadow:rgba(0,0,0,.5);
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#0d1620; --surface:#15212e; --surface2:#1e2e40; --ink:#ece3cf; --muted:#9aa8b6;
+  --line:#2c3f54; --accent:#d4a63f; --accent-ink:#1b1406; --danger:#e07366; --good:#7fbd87;
+  --nav:#09111a; --shadow:rgba(0,0,0,.5);
+}
+:root{box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px);height:100%}
+*,*::before,*::after{box-sizing:inherit}
+body{height:100%;margin:0;background:var(--bg);color:var(--ink);font-family:var(--ui);font-size:17px;line-height:1.35;-webkit-tap-highlight-color:transparent;overscroll-behavior:none}
+button{font:inherit;color:inherit;cursor:pointer;touch-action:manipulation}
+input,textarea{font:inherit;color:inherit}
+:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+
+#app{position:relative;height:100%;max-width:560px;margin:0 auto;display:flex;flex-direction:column;background:var(--bg)}
+.top{flex:none;display:flex;align-items:center;gap:10px;padding:8px 12px;border-bottom:1px solid var(--line);background:var(--surface)}
+.who{flex:1;min-width:0;text-align:left;background:none;border:0;padding:6px 0;font-family:var(--display);font-size:19px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.who small{display:block;font-family:var(--ui);font-size:13px;color:var(--muted);line-height:1.1;margin-top:1px}
+.pcur{display:flex;align-items:baseline;justify-content:space-between;gap:10px}
+.pcur span{color:var(--muted)}
+.pcur b{font-family:var(--display);font-size:56px;font-weight:400;line-height:1}
+.pto{display:flex;align-items:baseline;justify-content:space-between;margin:6px 0 10px;padding:8px 12px;border-radius:12px;background:var(--surface2);color:var(--muted)}
+.pto b{font-family:var(--display);font-size:32px;font-weight:400;color:var(--ink);min-width:3ch;text-align:right}
+.kp{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.kp button{min-height:58px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);font-family:var(--display);font-size:28px}
+.kp button:active{transform:scale(.96)}
+.kp .go{background:var(--accent);color:var(--accent-ink);border-color:transparent;font-family:var(--ui);font-weight:700;font-size:20px}
+.tag{display:inline-block;padding:5px 12px;border-radius:16px;border:1px solid var(--line);margin:0 6px 6px 0;font-size:15px}
+.hist{list-style:none;margin:0;padding:0}
+.hist li{display:grid;grid-template-columns:62px 1fr;gap:10px;padding:10px 0;border-bottom:1px solid var(--line)}
+.hist li:last-child{border-bottom:0}
+.hist .hp{font-family:var(--display);font-size:26px;text-align:center;align-self:start;padding-top:2px}
+.hist li.now .hp{color:var(--accent)}
+.hist .ht{font-size:15.5px;line-height:1.3;min-width:0}
+.hist .ht small{display:block;color:var(--muted);font-size:14px}
+.hist .nt{font-style:italic;margin-top:2px}
+.hist .acts{display:flex;gap:8px;margin-top:6px}
+.who{line-height:1.1}
+.stats{display:flex;gap:12px;align-items:flex-end}
+.st{display:flex;flex-direction:column;align-items:flex-end;min-width:34px}
+.st small{font-size:12px;color:var(--muted);line-height:1}
+.st b{font-family:var(--display);font-size:22px;line-height:1.05;font-weight:400}
+.st b em{font-style:normal;font-size:14px;color:var(--muted)}
+.st.wide{min-width:64px}
+.bar{display:block;height:5px;border-radius:3px;background:var(--surface2);overflow:hidden;width:100%;margin-top:3px}
+.bar u{display:block;height:100%;background:var(--good);text-decoration:none;transition:width .25s}
+.bar.low u{background:var(--danger)}
+
+main{flex:1;overflow-y:auto;padding:12px 14px 20px;-webkit-overflow-scrolling:touch}
+h2{font-family:var(--display);font-weight:400;font-size:22px;margin:0 0 8px}
+.hint{color:var(--muted);font-size:15px;margin:4px 0 10px}
+.card{background:var(--surface);border:1px solid var(--line);border-radius:14px;padding:14px;margin-bottom:12px}
+.row{display:flex;gap:8px;align-items:center}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.grid2 .card{margin-bottom:0}
+.gap{height:12px}
+
+.btn{min-height:48px;min-width:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);padding:0 14px;font-weight:700}
+.btn:active{transform:scale(.97)}
+.btn.pri{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.btn.dng{color:var(--danger);border-color:var(--danger);background:transparent}
+.btn.block{display:block;width:100%}
+.btn[disabled]{opacity:.45}
+.btn.sm{min-height:40px;font-size:15px;padding:0 10px}
+
+.bignum{font-family:var(--display);font-size:60px;line-height:1;margin:2px 0 6px}
+.bignum small{font-size:26px;color:var(--muted)}
+.stepper{display:grid;gap:8px}
+.stepper.c4{grid-template-columns:repeat(4,1fr)}
+.stepper.c2{grid-template-columns:repeat(2,1fr)}
+.stepper.c3{grid-template-columns:48px 1fr 48px;align-items:center}
+.stepper.c5{grid-template-columns:repeat(4,1fr)}
+.val{text-align:center;font-family:var(--display);font-size:30px}
+.sub{display:flex;justify-content:space-between;align-items:center;margin-top:10px;color:var(--muted);font-size:15px}
+.sub .row{gap:6px}
+.mini-val{min-width:28px;text-align:center;font-weight:700;color:var(--ink)}
+
+.rollrow{display:grid;grid-template-columns:1fr auto auto;gap:12px;align-items:center;margin-bottom:8px}
+.rollrow b{font-family:var(--display);font-size:30px;font-weight:400}
+
+.disc{display:block;width:100%;text-align:left;border:1px solid var(--line);background:transparent;border-radius:12px;padding:10px 12px;margin-bottom:8px}
+.disc b{display:block;font-size:17px}
+.disc span{display:block;color:var(--muted);font-size:15px;line-height:1.3}
+.disc.on{background:var(--accent);border-color:transparent;color:var(--accent-ink)}
+.disc.on span{color:var(--accent-ink);opacity:.88}
+.disc[disabled]{opacity:.4}
+.chips{display:flex;flex-wrap:wrap;gap:8px;margin:8px 0}
+.chip{min-height:42px;border-radius:21px;border:1px solid var(--line);background:transparent;padding:0 14px;font-weight:500}
+.chip.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+.chip[disabled]{opacity:.4}
+
+ul.list{list-style:none;margin:0 0 8px;padding:0}
+ul.list li{display:flex;align-items:center;justify-content:space-between;gap:8px;padding:6px 0 6px 2px;border-bottom:1px dashed var(--line)}
+ul.list li:last-child{border-bottom:0}
+.x{min-width:44px;min-height:44px;border:0;background:none;color:var(--muted);font-size:18px}
+.empty{color:var(--muted);font-style:italic;margin:2px 0 8px}
+.addrow{display:flex;gap:8px;margin-top:6px}
+.addrow input,.field{flex:1;min-width:0;min-height:48px;border-radius:12px;border:1px solid var(--line);background:var(--surface2);padding:0 12px}
+textarea.field{padding:10px 12px;min-height:150px;width:100%;resize:vertical;line-height:1.4}
+label.lbl{display:block;font-weight:700;margin:0 0 4px}
+.slots{font-size:15px;color:var(--muted);float:right;margin-top:6px}
+
+.tog{display:flex;align-items:center;justify-content:space-between;gap:10px;width:100%;min-height:48px;border:1px solid var(--line);background:transparent;border-radius:12px;padding:6px 12px;margin-top:8px;text-align:left}
+.tog i{flex:none;width:44px;height:26px;border-radius:13px;background:var(--surface2);position:relative;border:1px solid var(--line)}
+.tog i::after{content:"";position:absolute;top:2px;left:2px;width:20px;height:20px;border-radius:50%;background:var(--muted);transition:transform .15s}
+.tog.on i{background:var(--accent);border-color:transparent}
+.tog.on i::after{transform:translateX(18px);background:var(--accent-ink)}
+.tog[disabled]{opacity:.45}
+
+/* Combat */
+.arena{display:grid;grid-template-columns:1fr 92px 1fr;gap:6px;align-items:start;margin:4px 0 8px}
+.side{text-align:center;padding:8px 4px;border-radius:14px;background:var(--surface);border:1px solid var(--line)}
+.side .nm{font-size:15px;color:var(--muted);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;padding:0 4px}
+.side .big{font-family:var(--display);font-size:54px;line-height:1.05}
+.side .big.dead{color:var(--danger)}
+.side .sk{font-size:15px;margin-top:4px;color:var(--muted)}
+.side .bar{width:80%;margin:2px auto 0;height:6px}
+.mid{text-align:center;padding-top:6px}
+.die{width:78px;height:78px;margin:0 auto 6px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:46px;border:3px double var(--accent);background:var(--surface)}
+.die.roll{animation:wob .25s linear infinite}
+@keyframes wob{0%{transform:rotate(-6deg)}50%{transform:rotate(6deg)}100%{transform:rotate(-6deg)}}
+@media (prefers-reduced-motion: reduce){.die.roll{animation:none}.bar u{transition:none}}
+.qv{font-size:14px;color:var(--muted);line-height:1.2}
+.qv b{font-family:var(--display);font-size:24px;font-weight:400;color:var(--ink)}
+.res{text-align:center;margin:6px 0 10px;font-size:17px;min-height:46px}
+.res.muted{color:var(--muted)}
+.banner{border-radius:12px;padding:12px;text-align:center;font-family:var(--display);font-size:22px;margin-bottom:10px;border:1px solid var(--line)}
+.banner.win{background:var(--good);color:#fff;border-color:transparent}
+.banner.lose{background:var(--danger);color:#fff;border-color:transparent}
+.banner.flee{background:var(--surface2)}
+.modbtn{display:flex;justify-content:space-between;align-items:center;width:100%;min-height:50px;border:1px solid var(--line);border-radius:12px;background:var(--surface);padding:0 14px;margin-bottom:10px}
+.modbtn b{font-family:var(--display);font-size:22px;font-weight:400}
+.parts{margin:0 0 6px;padding:0;list-style:none}
+.parts li{display:flex;justify-content:space-between;padding:3px 0;border-bottom:1px dashed var(--line)}
+.log{list-style:none;margin:0;padding:0}
+.log li{display:grid;grid-template-columns:40px 1fr;gap:10px;align-items:center;padding:8px 0;border-bottom:1px solid var(--line)}
+.log .d{width:36px;height:36px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-size:20px;border:2px solid var(--line)}
+.log .t{font-size:15.5px;line-height:1.3}
+.log .t small{display:block;color:var(--muted);font-size:14px}
+.loss{color:var(--danger);font-weight:700}
+.gain{color:var(--good);font-weight:700}
+
+.dock{flex:none;background:var(--nav);border-top:1px solid var(--line);padding:8px 12px 8px;box-shadow:0 -6px 14px var(--shadow)}
+.roll{display:block;width:100%;min-height:68px;border-radius:16px;border:0;background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-size:28px;margin-bottom:8px}
+.roll:active{transform:scale(.98)}
+.roll[disabled]{opacity:.6}
+.pad{display:grid;grid-template-columns:repeat(5,1fr);gap:8px;margin-bottom:8px}
+.pad button{min-height:54px;border-radius:12px;border:1px solid var(--line);background:var(--accent);color:var(--accent-ink);font-family:var(--display);font-size:26px}
+.pad button:active{transform:scale(.95)}
+.dock-sub{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.dock-sub .btn{min-height:44px;font-size:15px;padding:0 6px}
+.dock-note{text-align:center;color:var(--muted);font-size:14px;margin:0 0 6px}
+
+nav{flex:none;display:grid;grid-template-columns:repeat(5,1fr);background:var(--nav);border-top:1px solid var(--line)}
+nav button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;min-height:58px;background:none;border:0;color:var(--muted);font-size:13.5px;font-weight:500;padding:6px 0}
+nav button svg{width:24px;height:24px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+nav button.on{color:var(--accent);font-weight:700}
+
+.pbtn{flex:1;min-width:0;text-align:left;border:1px solid var(--line);border-radius:12px;background:transparent;min-height:54px;padding:6px 12px;font-weight:700}
+.pbtn small{display:block;font-size:14px;font-weight:400;opacity:.8}
+.pbtn.on{background:var(--accent);color:var(--accent-ink);border-color:transparent}
+ul.plist li{border:0;padding:3px 0}
+.fgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0 12px}
+.fgrid label{display:block;font-weight:700;font-size:15px;margin-bottom:4px}
+.fgrid input{width:100%}
+.fab{position:absolute;right:14px;bottom:72px;z-index:10;min-width:74px;min-height:56px;padding:0 18px;border-radius:28px;border:0;background:var(--accent);color:var(--accent-ink);box-shadow:0 4px 14px var(--shadow);font-family:var(--display);font-size:24px;display:flex;align-items:center;justify-content:center;gap:2px}
+.fab:active{transform:scale(.96)}
+main.hasfab{padding-bottom:88px}
+.sheetbg{position:fixed;inset:0;z-index:25;background:rgba(0,0,0,.5);display:flex;align-items:flex-end;justify-content:center}
+.sheet{width:100%;max-width:560px;background:var(--surface);border:1px solid var(--line);border-bottom:0;border-radius:20px 20px 0 0;padding:14px 14px calc(14px + env(safe-area-inset-bottom,0px));max-height:100%;overflow-y:auto}
+.sheet .pcur b{font-size:44px}
+.sheet .hint{margin:0 0 2px}
+.toast{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(86px + env(safe-area-inset-bottom,0px));background:var(--ink);color:var(--bg);padding:10px 16px;border-radius:20px;font-size:15px;z-index:20;max-width:90%;text-align:center}
+.modal{position:fixed;inset:0;background:rgba(0,0,0,.55);display:grid;place-items:center;z-index:30;padding:20px}
+.modal .box{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px;max-width:380px;width:100%}
+.modal p{margin:0 0 14px;font-size:18px}
+.modal .row .btn{flex:1}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<script>
+window.__PWA=1;
+if('serviceWorker' in navigator){
+  window.addEventListener('load',function(){
+    navigator.serviceWorker.register('sw.js').catch(function(){});
+    navigator.serviceWorker.ready.then(function(){window.dispatchEvent(new Event('offlineready'));}).catch(function(){});
+  });
+}
+</script>
+<script>
+(function(){
+'use strict';
+
+/* ---------- Données du jeu ---------- */
+// Table des coups portés (Loup Solitaire). Lignes = tirage 1..9 puis 0. Colonnes = quotient d'attaque (13 colonnes).
+const TABLE_E=[
+ [0,0,0,0,1,2,3,4,5,6,7,8,9],
+ [0,0,0,1,2,3,4,5,6,7,8,9,10],
+ [0,0,1,2,3,4,5,6,7,8,9,10,11],
+ [0,1,2,3,4,5,6,7,8,9,10,11,12],
+ [1,2,3,4,5,6,7,8,9,10,11,12,14],
+ [2,3,4,5,6,7,8,9,10,11,12,14,16],
+ [3,4,5,6,7,8,9,10,11,12,14,16,18],
+ [4,5,6,7,8,9,10,11,12,14,16,18,'T'],
+ [5,6,7,8,9,10,11,12,14,16,18,'T','T'],
+ [6,7,8,9,10,11,12,14,16,18,'T','T','T']
+];
+const TABLE_LS=[
+ ['T','T',8,6,6,5,5,5,4,4,4,3,3],
+ ['T',8,7,6,5,5,4,4,3,3,3,3,2],
+ [8,7,6,5,5,4,4,3,3,3,2,2,2],
+ [8,7,6,5,4,4,3,3,2,2,2,2,2],
+ [7,6,5,4,4,3,2,2,2,2,2,2,1],
+ [6,6,5,4,3,2,2,2,2,1,1,1,1],
+ [5,5,4,3,2,2,1,1,1,0,0,0,0],
+ [4,4,3,2,1,1,0,0,0,0,0,0,0],
+ [3,3,2,0,0,0,0,0,0,0,0,0,0],
+ [0,0,0,0,0,0,0,0,0,0,0,0,0]
+];
+function colIndex(q){
+  if(q<=-11) return 0;
+  if(q>=11) return 12;
+  if(q===0) return 6;
+  return q>0 ? 6+Math.ceil(q/2) : 6-Math.ceil(-q/2);
+}
+function lookup(draw,q){
+  const r = draw===0 ? 9 : draw-1;
+  const c = colIndex(q);
+  return {e:TABLE_E[r][c], l:TABLE_LS[r][c]};
+}
+const DISC=[
+ {id:'camouflage',n:'Camouflage',d:'Se fondre dans le décor et passer inaperçu, en ville comme dans la nature.'},
+ {id:'chasse',n:'Chasse',d:'Trouver de quoi manger en terrain sauvage : plus besoin de repas en route.'},
+ {id:'sixieme',n:'Sixième sens',d:'Pressentir un danger ou les intentions cachées d\u2019un inconnu.'},
+ {id:'orientation',n:'Orientation',d:'Suivre une piste, lire les traces, trouver le bon chemin.'},
+ {id:'guerison',n:'Guérison',d:'+1 Endurance par paragraphe sans combat.'},
+ {id:'armes',n:'Maîtrise des armes',d:'+2 Habileté avec l\u2019arme maîtrisée.'},
+ {id:'bouclier',n:'Bouclier psychique',d:'Protège des attaques mentales des ennemis.'},
+ {id:'psy',n:'Puissance psychique',d:'+2 Habileté en combat, sauf face à un ennemi immunisé.'},
+ {id:'animale',n:'Communication animale',d:'Comprendre les animaux et s\u2019en faire des alliés.'},
+ {id:'matiere',n:'Maîtrise de la matière',d:'Déplacer de petits objets par la pensée.'}
+];
+const WEAPONS=["Poignard","Lance","Masse d'armes","Épée courte","Marteau de guerre","Épée","Hache","Bâton","Glaive"];
+const WDRAW=["Poignard","Lance","Masse d'armes","Épée courte","Marteau de guerre","Épée","Hache","Épée","Bâton","Glaive"]; // tirage 0 à 9
+const BAG_MAX=8, GOLD_MAX=50;
+
+/* ---------- État et sauvegarde ---------- */
+const KEY='ls-companion-livre1-v1';
+const KEY2='ls-companion-livre1-v2';
+const DEF=()=>({
+  v:1,name:'Loup Solitaire',hab:10,endMax:20,end:20,gold:0,rolled:false,
+  disc:[],wm:null,weapons:[],bag:[],meals:0,special:[],notes:'',theme:'auto',tab:'fiche',para:null,hist:[],fought:false,autoHeal:true,
+  draft:{name:'',hab:12,end:20,immunePsy:false,psyAtk:false},
+  combat:null
+});
+let store=loadStore();
+let s=store.profiles[store.cur];
+const ui={sheet:false,pbuf:'',detail:false,rolling:false,exportText:null,importOpen:false,saved:true};
+function newId(){return 'p'+Date.now().toString(36)+Math.floor(Math.random()*46656).toString(36);}
+function loadStore(){
+  try{
+    const r=localStorage.getItem(KEY2);
+    if(r){
+      const o=JSON.parse(r);
+      if(o&&o.profiles&&o.profiles[o.cur]){
+        Object.keys(o.profiles).forEach(k=>{o.profiles[k]=Object.assign(DEF(),o.profiles[k]);});
+        o.theme=o.theme||'auto';
+        return o;
+      }
+    }
+  }catch(e){}
+  let st=DEF();
+  try{const r=localStorage.getItem(KEY);if(r)st=Object.assign(DEF(),JSON.parse(r));}catch(e){}
+  const id=newId();const o={cur:id,theme:st.theme||'auto',profiles:{}};o.profiles[id]=st;return o;
+}
+function save(){
+  store.profiles[store.cur]=s;
+  try{localStorage.setItem(KEY2,JSON.stringify(store));ui.saved=true;}catch(e){ui.saved=false;}
+}
+function addProfile(st,tab){
+  store.profiles[store.cur]=s;
+  const id=newId();
+  st.tab=tab||'fiche';
+  store.profiles[id]=st;store.cur=id;s=st;
+  ui.np=null;ui.exportText=null;ui.importOpen=false;ui.detail=false;ui.resetScroll=true;
+}
+const get=p=>p.split('.').reduce((o,k)=>o&&o[k],s);
+const set=(p,v)=>{const k=p.split('.');const last=k.pop();const o=k.reduce((a,x)=>a[x],s);o[last]=v;};
+function clampAll(){
+  s.hab=Math.max(0,s.hab);
+  s.endMax=Math.max(1,s.endMax);
+  s.end=Math.max(0,Math.min(s.end,s.endMax));
+  s.gold=Math.max(0,Math.min(s.gold,GOLD_MAX));
+  s.meals=Math.max(0,Math.min(s.meals,BAG_MAX-s.bag.length));
+}
+
+/* ---------- Utilitaires ---------- */
+const esc=t=>String(t).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function rnd(){
+  try{const a=new Uint8Array(1);do{crypto.getRandomValues(a);}while(a[0]>=250);return a[0]%10;}
+  catch(e){return Math.floor(Math.random()*10);}
+}
+function buzz(ms){try{if(navigator.vibrate)navigator.vibrate(ms);}catch(e){}}
+const pct=(v,m)=>m>0?Math.max(0,Math.min(100,v/m*100)):0;
+const fmtQ=q=>q>0?'+'+q:q<0?'\u2212'+(-q):'0';
+const sgn=n=>n>0?'+'+n:'\u2212'+(-n);
+const hasD=id=>s.disc.includes(id);
+function toast(msg){
+  const old=document.querySelector('.toast');if(old)old.remove();
+  const t=document.createElement('div');t.className='toast';t.textContent=msg;t.setAttribute('role','status');
+  document.body.appendChild(t);setTimeout(()=>t.remove(),2200);
+}
+function confirmDlg(msg,yes,yesLabel){
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML='<div class="box" role="dialog" aria-modal="true"><p>'+esc(msg)+'</p><div class="row"><button class="btn" data-m="no">Annuler</button><button class="btn pri" data-m="yes">'+esc(yesLabel||'Confirmer')+'</button></div></div>';
+  m.addEventListener('click',e=>{
+    const b=e.target.closest('[data-m]');
+    if(!b&&e.target!==m)return;
+    m.remove();
+    if(b&&b.dataset.m==='yes')yes();
+  });
+  document.body.appendChild(m);
+}
+function promptDlg(msg,init,cb){
+  const m=document.createElement('div');m.className='modal';
+  m.innerHTML='<div class="box" role="dialog" aria-modal="true"><p>'+esc(msg)+'</p><input class="field" style="width:100%;margin-bottom:14px" maxlength="90" value="'+esc(init||'')+'"><div class="row"><button class="btn" data-m="no">Annuler</button><button class="btn pri" data-m="yes">Enregistrer</button></div></div>';
+  const inp=m.querySelector('input');
+  const done=ok=>{m.remove();if(ok)cb(inp.value);};
+  m.addEventListener('click',e=>{const b=e.target.closest('[data-m]');if(b)done(b.dataset.m==='yes');else if(e.target===m)done(false);});
+  inp.addEventListener('keydown',e=>{if(e.key==='Enter')done(true);});
+  document.body.appendChild(m);inp.focus();
+}
+let lock=null;
+async function wake(){try{if('wakeLock' in navigator&&!lock){lock=await navigator.wakeLock.request('screen');lock.addEventListener('release',()=>{lock=null;});}}catch(e){}}
+
+/* ---------- Combat : calculs ---------- */
+function calcHab(c){
+  const parts=[{l:'Habileté',v:s.hab}];
+  if(c.weapon==='none') parts.push({l:'Sans arme',v:-4});
+  else if(hasD('armes')&&s.wm&&c.weapon===s.wm&&c.mastery) parts.push({l:'Maîtrise des armes',v:2});
+  if(hasD('psy')&&c.psy&&!c.enemy.immunePsy) parts.push({l:'Puissance psychique',v:2});
+  if(c.mod) parts.push({l:'Modificateur manuel',v:c.mod});
+  return {total:parts.reduce((a,p)=>a+p.v,0),parts};
+}
+function goPara(n){
+  let heal=0;
+  if(s.para!==null&&s.autoHeal&&hasD('guerison')&&!s.fought&&s.end>0&&s.end<s.endMax){heal=1;s.end=Math.min(s.endMax,s.end+1);}
+  s.fought=false;
+  s.para=n;
+  s.hist.push({p:n,end:s.end,gold:s.gold,heal,note:'',fights:[]});
+  if(s.hist.length>500)s.hist.shift();
+  buzz(15);
+  toast('Paragraphe '+n+(heal?' : Guérison +1':''));
+}
+function startCombat(){
+  s.fought=true;
+  const d=s.draft;
+  const weapon=s.weapons.includes(s.wm)?s.wm:(s.weapons[0]||'none');
+  s.combat={
+    enemy:{name:d.name.trim()||'Ennemi',hab:d.hab,end:d.end,endMax:d.end,immunePsy:d.immunePsy,psyAtk:d.psyAtk},
+    weapon,psy:true,mastery:true,mod:0,manual:false,rounds:[],status:'active'
+  };
+  ui.detail=false;
+}
+function doRound(draw){
+  const c=s.combat;if(!c||c.status!=='active')return;
+  const h=calcHab(c);
+  const q=h.total-c.enemy.hab;
+  const r=lookup(draw,q);
+  const hBefore=s.end,eBefore=c.enemy.end;
+  const psy=(c.enemy.psyAtk&&!hasD('bouclier'))?2:0;
+  const eAfter=r.e==='T'?0:Math.max(0,eBefore-r.e);
+  const hAfter=r.l==='T'?0:Math.max(0,hBefore-r.l-psy);
+  c.rounds.push({n:c.rounds.length+1,draw,q,hab:h.total,eLoss:r.e,lLoss:r.l,psy,eBefore,hBefore,eAfter,hAfter});
+  s.end=hAfter;c.enemy.end=eAfter;
+  if(hAfter<=0)c.status='lost';else if(eAfter<=0)c.status='won';
+  buzz(c.status==='active'?25:[40,60,40]);
+  save();render();
+}
+function undoRound(){
+  const c=s.combat;if(!c||!c.rounds.length)return;
+  const r=c.rounds.pop();
+  s.end=r.hBefore;c.enemy.end=r.eBefore;c.status='active';
+  save();render();
+}
+function rollAuto(){
+  if(ui.rolling)return;
+  const c=s.combat;if(!c||c.status!=='active')return;
+  const reduce=window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  if(reduce){doRound(rnd());return;}
+  ui.rolling=true;
+  const el=document.getElementById('die');const btn=document.querySelector('.roll');
+  if(el)el.classList.add('roll');if(btn)btn.disabled=true;
+  let n=0;
+  const t=setInterval(()=>{
+    if(el)el.textContent=rnd();
+    if(++n>=9){clearInterval(t);ui.rolling=false;doRound(rnd());}
+  },65);
+}
+
+/* ---------- Vues ---------- */
+const ICON={
+  fiche:'<svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="3.6"/><path d="M4.5 20c.6-4 3.6-6 7.5-6s6.900 2 7.500 6"/></svg>',
+  sac:'<svg viewBox="0 0 24 24"><path d="M8 7V5.500A2.500 2.500 0 0 1 10.500 3h3A2.500 2.500 0 0 1 16 5.500V7"/><rect x="4.500" y="7" width="15" height="13.500" rx="3"/><path d="M9 13h6"/></svg>',
+  combat:'<svg viewBox="0 0 24 24"><path d="M5 19 17.500 6.500M17.500 6.500V10M17.500 6.500H14M19 19 6.500 6.500M6.500 6.500V10M6.500 6.500H10"/><path d="M4 20l2-2M20 20l-2-2"/></svg>',
+  parcours:'<svg viewBox="0 0 24 24"><path d="M6 21V4"/><path d="M6 5h11l-2.500 3.500L17 12H6"/></svg>',
+  aventure:'<svg viewBox="0 0 24 24"><path d="M5 4.500h10a3 3 0 0 1 3 3V20H8a3 3 0 0 1-3-3z"/><path d="M5 17a3 3 0 0 1 3-3h10"/></svg>'
+};
+const TABS=[['fiche','Fiche'],['sac','Sac'],['combat','Combat'],['parcours','Parcours'],['aventure','Profils']];
+
+function vHeader(){
+  const p=pct(s.end,s.endMax);
+  return '<header class="top"><button class="who" data-act="sheet">'+esc(s.name)+(s.para?'<small>Paragraphe '+s.para+'</small>':'')+'</button>'+
+   '<div class="stats">'+
+   '<span class="st"><small>Habileté</small><b>'+s.hab+'</b></span>'+
+   '<span class="st wide"><small>Endurance</small><b>'+s.end+'<em>/'+s.endMax+'</em></b><i class="bar'+(p<=25?' low':'')+'"><u style="width:'+p+'%"></u></i></span>'+
+   '<span class="st"><small>Or</small><b>'+s.gold+'</b></span></div></header>';
+}
+function vNav(){
+  return '<nav>'+TABS.map(t=>'<button class="'+(s.tab===t[0]?'on':'')+'" data-act="tab" data-v="'+t[0]+'"'+(s.tab===t[0]?' aria-current="page"':'')+'>'+ICON[t[0]]+'<span>'+t[1]+'</span></button>').join('')+'</nav>';
+}
+function stepBtns(path,vals,extra){
+  return vals.map(d=>'<button class="btn" data-act="num" data-p="'+path+'" data-d="'+d+'" '+(extra||'')+'>'+sgn(d)+'</button>').join('');
+}
+
+function vFiche(){
+  let h='';
+  if(!s.rolled){
+    h+='<section class="card"><h2>Création du personnage</h2>'+
+     '<p class="hint">Habileté : 10 + un chiffre de la table de hasard. Endurance : 20 + un chiffre.</p>'+
+     '<div class="rollrow"><span>Habileté</span><b>'+s.hab+'</b><button class="btn" data-act="rollhab">Tirer</button></div>'+
+     '<div class="rollrow"><span>Endurance</span><b>'+s.endMax+'</b><button class="btn" data-act="rollend">Tirer</button></div>'+
+     '<p class="hint">Vous préférez tirer dans le livre ? Réglez les valeurs avec les boutons plus et moins ci-dessous.</p>'+
+     '<button class="btn pri block" data-act="createdone">Terminer la création</button></section>';
+  }
+  const heal=hasD('guerison');
+  h+='<section class="card"><h2>Endurance</h2>'+
+   '<div class="bignum">'+s.end+' <small>/ '+s.endMax+'</small></div>'+
+   '<i class="bar'+(pct(s.end,s.endMax)<=25?' low':'')+'" style="height:8px;margin-bottom:12px"><u style="width:'+pct(s.end,s.endMax)+'%"></u></i>'+
+   '<div class="stepper c4">'+stepBtns('end',[-3,-1,1,3])+'</div>'+
+   (heal?'<button class="btn block" style="margin-top:8px" data-act="num" data-p="end" data-d="1">Guérison : +1 Endurance</button>':'')+
+   '<div class="sub"><span>Endurance maximale</span><span class="row"><button class="btn sm" data-act="num" data-p="endMax" data-d="-1" aria-label="Moins un">\u2212</button><span class="mini-val">'+s.endMax+'</span><button class="btn sm" data-act="num" data-p="endMax" data-d="1" aria-label="Plus un">+</button></span></div>'+
+   '</section>';
+  h+='<div class="grid2">'+
+   '<section class="card"><h2>Habileté</h2><div class="bignum" style="text-align:center">'+s.hab+'</div>'+
+   '<div class="stepper c2">'+stepBtns('hab',[-1,1])+'</div></section>'+
+   '<section class="card"><h2>Or</h2><div class="bignum" style="text-align:center">'+s.gold+'</div>'+
+   '<div class="stepper c2">'+stepBtns('gold',[-1,1],'data-max="'+GOLD_MAX+'"')+'</div>'+
+   '<div class="stepper c2" style="margin-top:8px">'+stepBtns('gold',[-10,10])+'</div>'+
+   '<div class="hint" style="text-align:center;margin:6px 0 0">maximum '+GOLD_MAX+'</div></section>'+
+   '</div><div class="gap"></div>';
+
+  h+='<section class="card"><h2>Disciplines Kaï <span style="color:var(--muted);font-size:17px">('+s.disc.length+'/5)</span></h2>'+
+   '<p class="hint">Touchez pour choisir ou retirer une discipline.</p>';
+  DISC.forEach(d=>{
+    const on=hasD(d.id);
+    h+='<button class="disc'+(on?' on':'')+'" data-act="disc" data-id="'+d.id+'" aria-pressed="'+on+'"'+((!on&&s.disc.length>=5)?' disabled':'')+'><b>'+d.n+'</b><span>'+d.d+'</span></button>';
+  });
+  if(hasD('armes')){
+    h+='<div style="margin-top:6px"><label class="lbl">Arme maîtrisée : '+(s.wm?esc(s.wm):'<span style="color:var(--muted)">à choisir</span>')+'</label>'+
+     '<button class="btn block" data-act="wmroll">Tirer au hasard dans la table</button>'+
+     '<div class="chips">'+WEAPONS.map(w=>'<button class="chip'+(s.wm===w?' on':'')+'" data-act="wmset" data-w="'+esc(w)+'">'+esc(w)+'</button>').join('')+'</div></div>';
+  }
+  h+='</section>';
+  return h;
+}
+
+function listRows(arr,k){
+  return '<ul class="list">'+arr.map((t,i)=>'<li><span>'+esc(t)+'</span><button class="x" data-act="rm" data-k="'+k+'" data-i="'+i+'" aria-label="Retirer '+esc(t)+'">\u2715</button></li>').join('')+'</ul>';
+}
+function vSac(){
+  const used=s.bag.length+s.meals;
+  let h='<section class="card"><h2>Armes <span class="slots">'+s.weapons.length+'/2</span></h2>'+
+   (s.weapons.length?listRows(s.weapons,'weapons'):'<p class="empty">Aucune arme. Sans arme, l\u2019Habileté baisse de 4 en combat.</p>');
+  if(s.weapons.length<2){
+    h+='<div class="chips">'+WEAPONS.map(w=>'<button class="chip" data-act="quickw" data-w="'+esc(w)+'">'+esc(w)+'</button>').join('')+'</div>'+
+     '<div class="addrow"><input id="in-weapons" class="field" placeholder="Autre arme" maxlength="40"><button class="btn pri" data-act="add" data-k="weapons">Ajouter</button></div>';
+  }
+  h+='</section>';
+
+  h+='<section class="card"><h2>Sac à dos <span class="slots">'+used+'/'+BAG_MAX+' emplacements</span></h2>'+
+   '<label class="lbl">Repas</label>'+
+   '<div class="stepper c3"><button class="btn" data-act="num" data-p="meals" data-d="-1" aria-label="Un repas de moins">\u2212</button><div class="val">'+s.meals+'</div><button class="btn" data-act="num" data-p="meals" data-d="1" aria-label="Un repas de plus">+</button></div>'+
+   '<button class="btn block" style="margin:8px 0 6px" data-act="eat"'+(s.meals?'':' disabled')+'>Manger un repas</button>'+
+   (hasD('chasse')?'<p class="hint" style="margin:0 0 12px">Chasse : vous n\u2019avez pas besoin de repas en terrain où l\u2019on peut chasser. Le texte du paragraphe l\u2019indique s\u2019il faut manger malgré tout.</p>':
+    (s.meals?'<div style="height:6px"></div>':'<button class="btn dng block" style="margin:0 0 12px" data-act="nomeal">Pas de repas : \u22123 Endurance</button>'))+
+   '<label class="lbl">Objets</label>'+
+   (s.bag.length?listRows(s.bag,'bag'):'<p class="empty">Aucun objet dans le sac.</p>');
+  if(used<BAG_MAX){
+    h+='<div class="addrow"><input id="in-bag" class="field" placeholder="Nouvel objet" maxlength="40"><button class="btn pri" data-act="add" data-k="bag">Ajouter</button></div>';
+  }else{
+    h+='<p class="hint">Sac plein. Retirez un objet pour en ajouter un autre.</p>';
+  }
+  h+='</section>';
+
+  h+='<section class="card"><h2>Objets spéciaux</h2>'+
+   '<p class="hint">Ils ne prennent pas de place dans le sac.</p>'+
+   (s.special.length?listRows(s.special,'special'):'<p class="empty">Aucun objet spécial.</p>')+
+   '<div class="addrow"><input id="in-special" class="field" placeholder="Nouvel objet spécial" maxlength="40"><button class="btn pri" data-act="add" data-k="special">Ajouter</button></div></section>';
+  return h;
+}
+
+function enemySide(c){
+  const e=c.enemy;
+  return '<div class="side"><div class="nm">'+esc(e.name)+'</div><div class="big'+(e.end<=0?' dead':'')+'">'+e.end+'</div><i class="bar'+(pct(e.end,e.endMax)<=25?' low':'')+'"><u style="width:'+pct(e.end,e.endMax)+'%"></u></i><div class="sk">Habileté '+e.hab+'</div></div>';
+}
+function vCombat(){
+  const c=s.combat;
+  if(!c){
+    const d=s.draft;
+    return '<section class="card"><h2>Nouveau combat</h2>'+
+     '<label class="lbl" for="d-name">Nom de l\u2019ennemi</label>'+
+     '<input id="d-name" class="field" style="width:100%;margin-bottom:12px" data-bind="draft.name" value="'+esc(d.name)+'" placeholder="Garde Giak" maxlength="40">'+
+     '<label class="lbl">Habileté de l\u2019ennemi</label>'+
+     '<div class="stepper c5" style="margin-bottom:12px">'+stepBtns('draft.hab',[-5,-1,1,5])+'</div>'+
+     '<div class="val" style="margin:-4px 0 12px">'+d.hab+'</div>'+
+     '<label class="lbl">Endurance de l\u2019ennemi</label>'+
+     '<div class="stepper c5" style="margin-bottom:12px">'+stepBtns('draft.end',[-5,-1,1,5])+'</div>'+
+     '<div class="val" style="margin:-4px 0 4px">'+d.end+'</div>'+
+     tog('draft.immunePsy','Immunisé à la Puissance psychique',d.immunePsy)+
+     tog('draft.psyAtk','Attaque psychique (−2 Endurance par round)',d.psyAtk)+
+     '</section>'+
+     '<p class="hint" style="text-align:center">Votre Habileté ('+s.hab+') et votre Endurance ('+s.end+') sont reprises de la fiche.</p>';
+  }
+  const h=calcHab(c),q=h.total-c.enemy.hab,last=c.rounds[c.rounds.length-1];
+  let out='';
+  if(c.status==='won')out+='<div class="banner win">Ennemi vaincu</div>';
+  if(c.status==='lost')out+='<div class="banner lose">Loup Solitaire est tombé</div>';
+  if(c.status==='fled')out+='<div class="banner flee">Vous avez pris la fuite</div>';
+  out+='<div class="arena">'+
+   '<div class="side"><div class="nm">'+esc(s.name)+'</div><div class="big'+(s.end<=0?' dead':'')+'">'+s.end+'</div><i class="bar'+(pct(s.end,s.endMax)<=25?' low':'')+'"><u style="width:'+pct(s.end,s.endMax)+'%"></u></i><div class="sk">Habileté '+h.total+'</div></div>'+
+   '<div class="mid"><div class="die" id="die" aria-live="polite">'+(last?last.draw:'\u2013')+'</div><div class="qv">Quotient<br><b>'+fmtQ(q)+'</b></div></div>'+
+   enemySide(c)+'</div>';
+  if(last){
+    const et=last.eLoss==='T'?'l\u2019ennemi est <span class="loss">tué sur le coup</span>':(last.eLoss===0?'l\u2019ennemi ne perd rien':'l\u2019ennemi perd <span class="gain">'+last.eLoss+'</span>');
+    const lt=last.lLoss==='T'?'vous êtes <span class="loss">tué sur le coup</span>':((last.lLoss+last.psy)===0?'vous ne perdez rien':'vous perdez <span class="loss">'+(last.lLoss+last.psy)+'</span>'+(last.psy?' (dont 2 psychiques)':''));
+    out+='<p class="res">Round '+last.n+', tirage '+last.draw+' : '+et+' ; '+lt+'.</p>';
+  }else{
+    out+='<p class="res muted">Vérifiez votre arme, puis lancez le premier round.</p>';
+  }
+  out+='<button class="modbtn" data-act="detail" aria-expanded="'+ui.detail+'"><span>Habileté de combat, arme et bonus</span><b>'+h.total+'</b></button>';
+  if(ui.detail){
+    out+='<section class="card"><ul class="parts">'+h.parts.map(p=>'<li><span>'+p.l+'</span><b>'+(p.l==='Habileté'?p.v:sgn(p.v))+'</b></li>').join('')+'<li><span>Habileté de l\u2019ennemi</span><b>'+c.enemy.hab+'</b></li></ul>'+
+     '<label class="lbl" style="margin-top:10px">Arme utilisée</label><div class="chips">'+
+     '<button class="chip'+(c.weapon==='none'?' on':'')+'" data-act="cweapon" data-i="-1">Aucune (\u22124)</button>'+
+     s.weapons.map((w,i)=>'<button class="chip'+(c.weapon===w?' on':'')+'" data-act="cweapon" data-i="'+i+'">'+esc(w)+'</button>').join('')+'</div>';
+    if(!s.weapons.length)out+='<p class="hint">Ajoutez vos armes dans l\u2019onglet Sac.</p>';
+    if(hasD('armes')&&s.wm&&c.weapon===s.wm)out+=tog('combat.mastery','Maîtrise des armes ('+esc(s.wm)+') +2',c.mastery);
+    if(hasD('psy'))out+=tog('combat.psy','Puissance psychique +2',c.psy&&!c.enemy.immunePsy,c.enemy.immunePsy);
+    out+=tog('combat.enemy.immunePsy','Ennemi immunisé à la Puissance psychique',c.enemy.immunePsy);
+    out+=tog('combat.enemy.psyAtk','Ennemi à attaque psychique'+(hasD('bouclier')?' (Bouclier psychique actif)':' (−2 par round)'),c.enemy.psyAtk);
+    out+='<label class="lbl" style="margin-top:12px">Modificateur manuel</label>'+
+     '<div class="stepper c3"><button class="btn" data-act="num" data-p="combat.mod" data-d="-1" aria-label="Moins un">\u2212</button><div class="val">'+fmtQ(c.mod)+'</div><button class="btn" data-act="num" data-p="combat.mod" data-d="1" aria-label="Plus un">+</button></div></section>';
+  }
+  if(c.rounds.length){
+    out+='<section class="card"><h2>Historique</h2><ol class="log" style="padding:0">'+
+     c.rounds.slice().reverse().map(r=>'<li><div class="d">'+r.draw+'</div><div class="t">Quotient '+fmtQ(r.q)+', Habileté '+r.hab+'<br>Ennemi '+(r.eLoss==='T'?'<span class="loss">tué</span>':'<span class="gain">\u2212'+r.eLoss+'</span>')+' (reste '+r.eAfter+'), vous '+(r.lLoss==='T'?'<span class="loss">tué</span>':'<span class="loss">\u2212'+(r.lLoss+r.psy)+'</span>')+' (reste '+r.hAfter+')</div></li>').join('')+'</ol></section>';
+  }
+  return out;
+}
+function tog(path,label,on,disabled){
+  return '<button class="tog'+(on?' on':'')+'" data-act="tgl" data-p="'+path+'" aria-pressed="'+!!on+'"'+(disabled?' disabled':'')+'><span>'+label+'</span><i></i></button>';
+}
+function vDock(){
+  if(s.tab!=='combat')return '';
+  const c=s.combat;
+  if(!c){
+    return '<div class="dock"><button class="roll" data-act="cstart">Commencer le combat</button></div>';
+  }
+  if(c.status!=='active'){
+    return '<div class="dock"><button class="roll" data-act="cend">Terminer le combat</button><div class="dock-sub" style="grid-template-columns:1fr"><button class="btn" data-act="undo"'+(c.rounds.length?'':' disabled')+'>Annuler le dernier round</button></div></div>';
+  }
+  let h='<div class="dock">';
+  if(c.manual){
+    h+='<p class="dock-note">Touchez le chiffre tiré dans la table de hasard du livre</p><div class="pad">'+
+      [1,2,3,4,5,6,7,8,9,0].map(n=>'<button data-act="draw" data-v="'+n+'" aria-label="Tirage '+n+'">'+n+'</button>').join('')+'</div>';
+  }else{
+    h+='<button class="roll" data-act="roll">Lancer le round</button>';
+  }
+  h+='<div class="dock-sub"><button class="btn" data-act="undo"'+(c.rounds.length?'':' disabled')+'>Annuler round</button>'+
+    '<button class="btn" data-act="mode">Tirage : '+(c.manual?'manuel':'auto')+'</button>'+
+    '<button class="btn dng" data-act="flee">Fuite</button></div></div>';
+  return h;
+}
+
+let deferredInstall=null;
+const isStandalone=()=>(window.matchMedia&&window.matchMedia('(display-mode: standalone)').matches)||window.navigator.standalone===true;
+const isIOS=()=>/iphone|ipad|ipod/i.test(navigator.userAgent);
+function vInstall(){
+  if(!window.__PWA||isStandalone())return '';
+  let b;
+  if(deferredInstall)b='<button class="btn pri block" data-act="install">Installer sur cet appareil</button>';
+  else if(isIOS())b='<p class="hint" style="margin:0">Sur iPhone et iPad : touchez le bouton Partager de Safari, puis « Sur l\u2019écran d\u2019accueil ».</p>';
+  else b='<p class="hint" style="margin:0">Ouvrez le menu de votre navigateur, puis choisissez « Installer l\u2019application » ou « Ajouter à l\u2019écran d\u2019accueil ».</p>';
+  return '<section class="card"><h2>Installer l\u2019application</h2>'+b+(ui.offline?'<p class="hint" style="margin:8px 0 0">Prête pour une utilisation hors connexion.</p>':'')+'</section>';
+}
+function vProfiles(){
+  const ids=Object.keys(store.profiles);
+  let h='<section class="card"><h2>Profils</h2><ul class="list plist">'+ids.map(id=>{
+    const q=store.profiles[id],on=id===store.cur;
+    return '<li><button class="pbtn'+(on?' on':'')+'" data-act="switchp" data-id="'+id+'"'+(on?' aria-current="true"':'')+'>'+esc(q.name)+'<small>Habileté '+q.hab+', Endurance '+q.end+'/'+q.endMax+', Or '+q.gold+(q.para?', paragraphe '+q.para:'')+'</small></button>'+
+      '<button class="x" data-act="delp" data-id="'+id+'" aria-label="Supprimer '+esc(q.name)+'">\u2715</button></li>';
+  }).join('')+'</ul>';
+  if(ui.np==='started'){
+    const f=ui.form;
+    h+='<div style="border-top:1px solid var(--line);padding-top:12px;margin-top:6px"><h2>Aventure déjà commencée</h2>'+
+     '<p class="hint">Entrez l\u2019état actuel de votre héros. Vous ajouterez ensuite disciplines, armes et objets dans les autres onglets.</p>'+
+     '<label class="lbl" for="f-name">Nom du profil</label><input id="f-name" class="field" style="width:100%" data-form="name" value="'+esc(f.name)+'" maxlength="30">'+
+     '<div class="fgrid">'+
+     '<div><label for="f-hab">Habileté</label><input id="f-hab" class="field" type="number" inputmode="numeric" min="0" data-form="hab" value="'+f.hab+'"></div>'+
+     '<div><label for="f-endMax">Endurance maximale</label><input id="f-endMax" class="field" type="number" inputmode="numeric" min="1" data-form="endMax" value="'+f.endMax+'"></div>'+
+     '<div><label for="f-end">Endurance actuelle</label><input id="f-end" class="field" type="number" inputmode="numeric" min="0" data-form="end" value="'+f.end+'"></div>'+
+     '<div><label for="f-gold">Or</label><input id="f-gold" class="field" type="number" inputmode="numeric" min="0" max="'+GOLD_MAX+'" data-form="gold" value="'+f.gold+'"></div>'+
+     '<div><label for="f-para">Paragraphe actuel (0 si inconnu)</label><input id="f-para" class="field" type="number" inputmode="numeric" min="0" max="350" data-form="para" value="'+f.para+'"></div>'+
+     '<div><label for="f-meals">Repas</label><input id="f-meals" class="field" type="number" inputmode="numeric" min="0" max="'+BAG_MAX+'" data-form="meals" value="'+f.meals+'"></div>'+
+     '</div><button class="btn pri block" data-act="createstarted">Créer le profil</button>'+
+     '<button class="btn block" style="margin-top:8px" data-act="newcancel">Annuler</button></div>';
+  }else{
+    h+='<button class="btn pri block" data-act="newfresh">Nouvelle aventure (tirage des caractéristiques)</button>'+
+     '<button class="btn block" style="margin-top:8px" data-act="newopen">Ajouter une aventure déjà commencée</button>';
+  }
+  return h+'</section>';
+}
+function kpHtml(){
+  return '<div class="pto" aria-live="polite"><span>Aller au paragraphe</span><b>'+(ui.pbuf||'\u2013')+'</b></div>'+
+   '<div class="kp">'+[1,2,3,4,5,6,7,8,9].map(d=>'<button data-act="pk" data-d="'+d+'">'+d+'</button>').join('')+
+   '<button data-act="pdel" aria-label="Effacer le dernier chiffre">\u232B</button><button data-act="pk" data-d="0">0</button><button class="go" data-act="pgo">Aller</button></div>';
+}
+function vSheet(){
+  if(!ui.sheet)return '';
+  const cur=s.para,recent=[];
+  for(let i=s.hist.length-1;i>=0&&recent.length<6;i--){const p=s.hist[i].p;if(p!==cur&&!recent.includes(p))recent.push(p);}
+  return '<div class="sheetbg" data-act="sheetclose"><div class="sheet" data-act="noop" role="dialog" aria-modal="true" aria-label="Changer de paragraphe">'+
+   '<div class="pcur"><span>Paragraphe actuel</span><b>'+(cur===null?'\u2013':cur)+'</b></div>'+
+   (recent.length?'<p class="hint">Retour rapide</p><div class="chips" style="margin:4px 0 6px">'+recent.map(p=>'<button class="chip" data-act="pjump" data-n="'+p+'">'+p+'</button>').join('')+'</div>':'')+
+   kpHtml()+
+   '<div class="dock-sub" style="grid-template-columns:1fr 1fr;margin-top:8px"><button class="btn" data-act="pback"'+(s.hist.length?'':' disabled')+'>Annuler l\u2019étape</button><button class="btn" data-act="sheetclose">Fermer</button></div></div></div>';
+}
+function vParcours(){
+  const cur=s.para;
+  let h='<section class="card"><div class="pcur"><span>Paragraphe actuel</span><b>'+(cur===null?'\u2013':cur)+'</b></div>'+
+   kpHtml()+
+   '<button class="btn block" style="margin-top:8px" data-act="pback"'+(s.hist.length?'':' disabled')+'>Annuler la dernière étape</button>';
+  if(hasD('guerison'))h+=tog('autoHeal','Guérison automatique à chaque paragraphe sans combat',s.autoHeal);
+  h+='</section>';
+
+  const tags=(a,empty)=>a.length?a.map(x=>'<span class="tag">'+esc(x)+'</span>').join(''):'<span class="hint">'+empty+'</span>';
+  h+='<section class="card"><h2>Rappel</h2>'+
+   '<label class="lbl">Disciplines</label>'+tags(s.disc.map(id=>DISC.find(d=>d.id===id).n),'Aucune discipline choisie')+
+   '<label class="lbl" style="margin-top:8px">Armes et sac</label>'+tags(s.weapons.concat(s.bag,s.meals?[s.meals+(s.meals>1?' repas':' repas')]:[]),'Rien')+
+   '<label class="lbl" style="margin-top:8px">Objets spéciaux</label>'+tags(s.special,'Aucun')+'</section>';
+
+  h+='<section class="card"><h2>Historique</h2>';
+  if(!s.hist.length){
+    h+='<p class="empty">Le parcours apparaîtra ici : tapez le numéro de chaque paragraphe que vous lisez.</p>';
+  }else{
+    const MAXV=50,n=s.hist.length;
+    const rows=s.hist.map((e,i)=>({e,i})).reverse().slice(0,MAXV);
+    h+='<ul class="hist">'+rows.map(({e,i})=>{
+      const fights=(e.fights||[]).map(f=>'<small>Combat : '+esc(f.name)+', '+(f.status==='won'?'vaincu':f.status==='lost'?'défaite':'fuite')+' en '+f.rounds+' round'+(f.rounds>1?'s':'')+'</small>').join('');
+      return '<li'+(i===n-1?' class="now"':'')+'><div class="hp">'+e.p+'</div><div class="ht">Endurance '+e.end+', Or '+e.gold+(e.heal?' (Guérison +1)':'')+
+       (e.note?'<div class="nt">'+esc(e.note)+'</div>':'')+fights+
+       '<div class="acts"><button class="btn sm" data-act="pnote" data-i="'+i+'">'+(e.note?'Modifier la note':'Ajouter une note')+'</button>'+
+       (i===n-1?'':'<button class="btn sm" data-act="pjump" data-n="'+e.p+'">Y retourner</button>')+'</div></div></li>';
+    }).join('')+'</ul>';
+    if(n>MAXV)h+='<p class="hint">Et '+(n-MAXV)+' étapes plus anciennes.</p>';
+  }
+  h+='</section>';
+
+  h+='<section class="card"><h2>Notes</h2><p class="hint">Lieux, codes, indices à retenir.</p>'+
+   '<textarea class="field" data-bind="notes" placeholder="Vos notes d\u2019aventure…">'+esc(s.notes)+'</textarea></section>';
+  return h;
+}
+function vAventure(){
+  let h=vProfiles()+vInstall()+'<section class="card"><h2>Votre héros</h2><label class="lbl" for="n-name">Nom</label>'+
+   '<input id="n-name" class="field" style="width:100%" data-bind="name" value="'+esc(s.name)+'" maxlength="30"></section>'+
+   
+   '<section class="card"><h2>Apparence</h2><div class="chips">'+
+   [['auto','Automatique'],['light','Parchemin'],['dark','Nuit']].map(t=>'<button class="chip'+(store.theme===t[0]?' on':'')+'" data-act="theme" data-v="'+t[0]+'">'+t[1]+'</button>').join('')+'</div></section>'+
+   '<section class="card"><h2>Sauvegarde</h2>'+
+   '<p class="hint">'+(ui.saved?'Sauvegarde automatique sur cet appareil à chaque modification.':'La sauvegarde automatique est indisponible dans ce navigateur. Utilisez la copie manuelle.')+'</p>'+
+   '<button class="btn block" data-act="export">Copier la sauvegarde de ce profil</button>';
+  if(ui.exportText!==null){
+    h+='<textarea id="exp" class="field" style="margin-top:8px;min-height:90px" readonly>'+esc(ui.exportText)+'</textarea><p class="hint">Collez ce texte dans une note pour le conserver.</p>';
+  }
+  h+='<button class="btn block" style="margin-top:8px" data-act="impopen">Importer une sauvegarde</button>';
+  if(ui.importOpen){
+    h+='<textarea id="imp" class="field" style="margin-top:8px;min-height:90px" placeholder="Collez ici le texte de sauvegarde"></textarea>'+
+     '<button class="btn pri block" style="margin-top:8px" data-act="import">Ajouter comme nouveau profil</button>';
+  }
+  h+='</section>';
+  return h;
+}
+
+/* ---------- Rendu ---------- */
+const app=document.getElementById('app');
+function applyTheme(){
+  const r=document.documentElement;
+  if(store.theme==='auto')r.removeAttribute('data-theme');else r.setAttribute('data-theme',store.theme);
+}
+function render(){
+  const old=app.querySelector('main');const top=old?old.scrollTop:0;
+  const body=s.tab==='fiche'?vFiche():s.tab==='sac'?vSac():s.tab==='combat'?vCombat():s.tab==='parcours'?vParcours():vAventure();
+  const fab=s.tab!=='combat'&&s.tab!=='parcours';
+  app.innerHTML=vHeader()+'<main'+(fab?' class="hasfab"':'')+'>'+body+'</main>'+vDock()+vNav()+
+    (fab?'<button class="fab" data-act="sheet" aria-label="Changer de paragraphe, actuellement '+(s.para||'aucun')+'">\u00A7\u00A0'+(s.para||'\u2013')+'</button>':'')+vSheet();
+  const m=app.querySelector('main');if(m&&!ui.resetScroll)m.scrollTop=top;
+  ui.resetScroll=false;
+  if(s.tab==='combat')wake();
+  if(ui.exportText!==null&&s.tab==='aventure'){const t=document.getElementById('exp');if(t){t.focus();t.select();}}
+}
+
+/* ---------- Actions ---------- */
+const acts={
+  tab(b){ui.sheet=false;s.tab=b.dataset.v;ui.resetScroll=true;ui.exportText=null;ui.importOpen=false;},
+  num(b){
+    const p=b.dataset.p,d=parseInt(b.dataset.d,10);
+    let v=(get(p)||0)+d;
+    if(p==='draft.hab')v=Math.max(0,v);
+    else if(p==='draft.end')v=Math.max(1,v);
+    else if(p==='combat.mod')v=Math.max(-9,Math.min(9,v));
+    set(p,v);clampAll();
+  },
+  tgl(b){const p=b.dataset.p;set(p,!get(p));},
+  rollhab(){s.hab=10+rnd();buzz(15);},
+  rollend(){s.endMax=20+rnd();s.end=s.endMax;buzz(15);},
+  createdone(){s.rolled=true;s.end=s.endMax;},
+  disc(b){
+    const id=b.dataset.id,i=s.disc.indexOf(id);
+    if(i>=0){s.disc.splice(i,1);if(id==='armes')s.wm=null;}
+    else if(s.disc.length<5)s.disc.push(id);
+  },
+  wmroll(){s.wm=WDRAW[rnd()];buzz(15);},
+  wmset(b){s.wm=b.dataset.w;},
+  add(b){
+    const k=b.dataset.k,inp=document.getElementById('in-'+k);
+    const v=inp?inp.value.trim():'';
+    if(!v)return false;
+    if(k==='weapons'&&s.weapons.length>=2)return false;
+    if(k==='bag'&&s.bag.length+s.meals>=BAG_MAX)return false;
+    s[k].push(v);
+  },
+  quickw(b){if(s.weapons.length<2)s.weapons.push(b.dataset.w);},
+  rm(b){s[b.dataset.k].splice(parseInt(b.dataset.i,10),1);clampAll();},
+  eat(){if(s.meals>0){s.meals--;toast('Repas mangé');}},
+  theme(b){store.theme=b.dataset.v;applyTheme();},
+  export(){ui.exportText=JSON.stringify(s);try{navigator.clipboard.writeText(ui.exportText).then(()=>toast('Sauvegarde copiée'),()=>{});}catch(e){}},
+  impopen(){ui.importOpen=!ui.importOpen;},
+  import(){
+    const t=document.getElementById('imp');
+    let o=null;
+    try{o=JSON.parse(t.value.trim());}catch(e){}
+    if(!o||typeof o.hab!=='number'||!Array.isArray(o.weapons)){toast('Sauvegarde invalide');return false;}
+    const st=Object.assign(DEF(),o);
+    addProfile(st,'fiche');clampAll();toast('Profil importé');
+  },
+  switchp(b){
+    const id=b.dataset.id;if(!store.profiles[id]||id===store.cur)return false;
+    store.profiles[store.cur]=s;store.cur=id;s=store.profiles[id];s.tab='fiche';
+    ui.exportText=null;ui.importOpen=false;ui.np=null;ui.detail=false;ui.resetScroll=true;
+    toast('Profil : '+s.name);
+  },
+  delp(b){
+    const id=b.dataset.id,q=store.profiles[id];if(!q)return false;
+    const last=Object.keys(store.profiles).length===1;
+    confirmDlg(last?'C\u2019est votre seul profil. Le réinitialiser à zéro ?':'Supprimer le profil « '+q.name+' » ? Cette action est définitive.',()=>{
+      if(last){s=DEF();store.profiles[id]=s;}
+      else{
+        delete store.profiles[id];
+        if(store.cur===id){store.cur=Object.keys(store.profiles)[0];s=store.profiles[store.cur];s.tab='aventure';}
+      }
+      ui.exportText=null;ui.np=null;save();render();
+    },last?'Réinitialiser':'Supprimer');
+    return false;
+  },
+  newfresh(){addProfile(DEF(),'fiche');toast('Nouveau profil : tirez vos caractéristiques');},
+  newopen(){ui.np='started';ui.form={name:'Loup Solitaire',hab:15,endMax:25,end:25,gold:0,meals:0,para:0};},
+  newcancel(){ui.np=null;},
+  createstarted(){
+    const f=ui.form||{};
+    document.querySelectorAll('[data-form]').forEach(el=>{const k=el.dataset.form;f[k]=k==='name'?el.value:(parseInt(el.value,10)||0);});
+    const st=DEF();
+    st.name=(f.name||'').trim()||'Loup Solitaire';
+    st.hab=Math.max(0,f.hab);
+    st.endMax=Math.max(1,f.endMax);
+    st.end=Math.max(0,Math.min(f.end,st.endMax));
+    st.gold=Math.max(0,Math.min(f.gold,GOLD_MAX));
+    st.meals=Math.max(0,Math.min(f.meals,BAG_MAX));
+    st.rolled=true;
+    if(f.para>=1&&f.para<=350){st.para=f.para;st.hist=[{p:f.para,end:st.end,gold:st.gold,heal:0,note:'Départ du profil',fights:[]}];}
+    addProfile(st,'fiche');
+    toast('Profil créé : ajoutez disciplines, armes et sac');
+  },
+  sheet(){ui.sheet=true;ui.pbuf='';},
+  sheetclose(){ui.sheet=false;ui.pbuf='';},
+  noop(){return false;},
+  install(){
+    const e=deferredInstall;if(!e)return false;
+    deferredInstall=null;
+    try{e.prompt();}catch(x){}
+    return;
+  },
+  pk(b){const d=b.dataset.d;if(ui.pbuf===''&&d==='0')return;ui.pbuf=(ui.pbuf+d).slice(0,3);},
+  pdel(){ui.pbuf=ui.pbuf.slice(0,-1);},
+  pgo(){
+    const n=parseInt(ui.pbuf,10);
+    if(!(n>=1&&n<=350)){ui.pbuf='';toast('Les paragraphes vont de 1 à 350');return;}
+    ui.pbuf='';ui.sheet=false;goPara(n);
+  },
+  pjump(b){ui.sheet=false;goPara(parseInt(b.dataset.n,10));},
+  pback(){
+    if(!s.hist.length)return false;
+    const e=s.hist.pop();
+    if(e.heal)s.end=Math.max(0,s.end-e.heal);
+    const prev=s.hist[s.hist.length-1];s.para=prev?prev.p:null;
+    toast('Étape annulée');
+  },
+  pnote(b){
+    const e=s.hist[parseInt(b.dataset.i,10)];if(!e)return false;
+    promptDlg('Note pour le paragraphe '+e.p,e.note,v=>{e.note=v.trim();save();render();});
+    return false;
+  },
+  nomeal(){s.end=Math.max(0,s.end-3);toast('Pas de repas : \u22123 Endurance');},
+  detail(){ui.detail=!ui.detail;},
+  cweapon(b){const i=parseInt(b.dataset.i,10);s.combat.weapon=i<0?'none':s.weapons[i];},
+  cstart(){startCombat();},
+  roll(){rollAuto();return false;},
+  draw(b){doRound(parseInt(b.dataset.v,10));return false;},
+  undo(){undoRound();return false;},
+  mode(){s.combat.manual=!s.combat.manual;},
+  flee(){confirmDlg('Prendre la fuite et terminer ce combat ?',()=>{s.combat.status='fled';save();render();},'Fuir');return false;},
+  cend(){
+    const c=s.combat;
+    if(c&&s.hist.length){
+      const e=s.hist[s.hist.length-1];
+      (e.fights=e.fights||[]).push({name:c.enemy.name,rounds:c.rounds.length,status:c.status});
+    }
+    s.fought=true;s.combat=null;s.draft.name='';ui.detail=false;
+  }
+};
+document.addEventListener('click',e=>{
+  const b=e.target.closest('[data-act]');if(!b||b.disabled)return;
+  const f=acts[b.dataset.act];if(!f)return;
+  const keep=b.dataset.act==='add'?b.dataset.k:null;
+  const r=f(b);
+  if(r===false)return;
+  save();render();
+  if(keep){const i=document.getElementById('in-'+keep);if(i)i.focus();}
+});
+document.addEventListener('input',e=>{
+  const t=e.target;
+  if(t.dataset&&t.dataset.form){const k=t.dataset.form;ui.form[k]=k==='name'?t.value:(parseInt(t.value,10)||0);return;}
+  if(t.dataset&&t.dataset.bind){set(t.dataset.bind,t.value);save();
+    if(t.dataset.bind==='name'){const w=document.querySelector('.who');if(w&&w.firstChild)w.firstChild.nodeValue=t.value||'Loup Solitaire';}}
+});
+document.addEventListener('keydown',e=>{
+  if(e.key==='Enter'&&e.target.id&&e.target.id.indexOf('in-')===0){
+    const b=document.querySelector('[data-act="add"][data-k="'+e.target.id.slice(3)+'"]');if(b)b.click();
+  }
+});
+
+window.addEventListener('beforeinstallprompt',e=>{e.preventDefault();deferredInstall=e;if(s.tab==='aventure')render();});
+window.addEventListener('appinstalled',()=>{deferredInstall=null;toast('Application installée');if(s.tab==='aventure')render();});
+window.addEventListener('offlineready',()=>{ui.offline=true;if(s.tab==='aventure')render();});
+try{if(navigator.storage&&navigator.storage.persist)navigator.storage.persist();}catch(e){}
+clampAll();applyTheme();render();
+})();
+</script>
+</body>
+</html>
